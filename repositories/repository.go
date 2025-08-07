@@ -22,6 +22,7 @@ type Subscription struct {
 	UserId      uuid.UUID `json:"user_id" gorm:"primary_key"`
 	StartDate   time.Time `json:"start_date"`
 	EndDate     time.Time `json:"end_date,omitempty"`
+	DeletedAt   time.Time `json:"deleted_at,omitempty"`
 }
 
 func (r *Repository) CreateSubscription(ctx context.Context, sub *Subscription) error {
@@ -35,11 +36,19 @@ func (r *Repository) CreateSubscription(ctx context.Context, sub *Subscription) 
 
 func (r *Repository) GetSubscription(ctx context.Context, userId uuid.UUID) (*Subscription, error) {
 	var sub *Subscription
-	
+
 	err := r.db.WithContext(ctx).Where("user_id", userId).Find(&sub).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscription")
 	}
 
 	return sub, nil
+}
+
+func (r *Repository) DeleteSubscription(ctx context.Context, userId uuid.UUID) error {
+	err := r.db.Where("user_id", userId).Delete("deleted_at", time.Now().UTC()).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to delete subscription by user id")
+	}
+	return nil
 }

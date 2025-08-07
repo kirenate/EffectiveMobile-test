@@ -9,6 +9,7 @@ import (
 )
 
 type SubscriptionRequest struct {
+	UserId      uuid.UUID
 	ServiceName string
 	Price       int
 }
@@ -35,6 +36,22 @@ func (r *Service) ProcessSubscriptionRequest(ctx context.Context, req *Subscript
 	err := r.repository.CreateSubscription(ctx, sub)
 	if err != nil {
 		return errors.Wrap(err, "failed to create subscription")
+	}
+	return nil
+}
+
+func (r *Service) ProcessSubscriptionGetRequest(ctx context.Context, req *SubscriptionRequest) (*repositories.Subscription, error) {
+	ans, err := r.repository.GetSubscription(ctx, req.UserId)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get subscription by user id")
+	}
+	return ans, nil
+}
+
+func (r *Service) ProcessSubscriptionDeleteRequest(ctx context.Context, req *SubscriptionRequest) error {
+	err := r.repository.DeleteSubscription(ctx, req.UserId)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete subscription")
 	}
 	return nil
 }

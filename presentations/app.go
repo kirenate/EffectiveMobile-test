@@ -19,4 +19,6 @@ func (r *Presentation) BuildApp() {
 	app.Use(recover2.New(recover2.Config{EnableStackTrace: true}))
 
 	app.Post("subscription", r.postSubscription)
+	app.Get("subscription", r.getSubscription)
+	app.Delete("subscription", r.deleteSubscription)
 }
