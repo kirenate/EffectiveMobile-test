@@ -55,3 +55,19 @@ func (r *Service) ProcessSubscriptionDeleteRequest(ctx context.Context, req *Sub
 	}
 	return nil
 }
+
+func (r *Service) ProcessSubscriptionUpdateRequest(ctx context.Context, req *SubscriptionRequest) error {
+	now := time.Now().UTC()
+	sub := &repositories.Subscription{
+		ServiceName: req.ServiceName,
+		Price:       req.Price,
+		UserId:      req.UserId,
+		StartDate:   now,
+		EndDate:     now.Add(24 * 30 * time.Hour),
+	}
+	err := r.repository.UpdateSubscription(ctx, sub)
+	if err != nil {
+		return errors.Wrap(err, "failed to update subscription")
+	}
+	return nil
+}

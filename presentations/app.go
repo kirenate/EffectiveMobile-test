@@ -21,4 +21,5 @@ func (r *Presentation) BuildApp() {
 	app.Post("subscription", r.postSubscription)
 	app.Get("subscription", r.getSubscription)
 	app.Delete("subscription", r.deleteSubscription)
+	app.Put("subscription", r.updateSubscription)
 }

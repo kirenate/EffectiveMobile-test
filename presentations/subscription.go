@@ -13,7 +13,7 @@ func (r *Presentation) postSubscription(c *fiber.Ctx) error {
 	if err != nil {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
-	
+
 	err = r.service.ProcessSubscriptionRequest(c.UserContext(), req)
 	if err != nil {
 		return &fiber.Error{Code: fiber.StatusBadRequest, Message: err.Error()}
@@ -51,5 +51,21 @@ func (r *Presentation) deleteSubscription(c *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to process subscription delete request")
 	}
 
+	return c.JSON(fiber.Map{"status": "success"})
+}
+
+func (r *Presentation) updateSubscription(c *fiber.Ctx) error {
+	var req *services.SubscriptionRequest
+
+	err := c.BodyParser(&req)
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
+	err = r.service.ProcessSubscriptionUpdateRequest(c.UserContext(), req)
+	if err != nil {
+		return errors.Wrap(err, "failed to update subscription")
+	}
+	
 	return c.JSON(fiber.Map{"status": "success"})
 }

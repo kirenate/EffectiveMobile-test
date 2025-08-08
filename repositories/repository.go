@@ -23,6 +23,7 @@ type Subscription struct {
 	StartDate   time.Time `json:"start_date"`
 	EndDate     time.Time `json:"end_date,omitempty"`
 	DeletedAt   time.Time `json:"deleted_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
 func (r *Repository) CreateSubscription(ctx context.Context, sub *Subscription) error {
@@ -46,9 +47,20 @@ func (r *Repository) GetSubscription(ctx context.Context, userId uuid.UUID) (*Su
 }
 
 func (r *Repository) DeleteSubscription(ctx context.Context, userId uuid.UUID) error {
-	err := r.db.Where("user_id", userId).Delete("deleted_at", time.Now().UTC()).Error
+	err := r.db.WithContext(ctx).Where("user_id", userId).Delete("deleted_at", time.Now().UTC()).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete subscription by user id")
 	}
+
+	return nil
+}
+
+func (r *Repository) UpdateSubscription(ctx context.Context, sub *Subscription) error {
+	sub.UpdatedAt = time.Now().UTC()
+	err := r.db.WithContext(ctx).Where("user_id", sub.UserId).Updates(sub).Error
+	if err != nil {
+		return errors.Wrap(err, "failed to update subscription")
+	}
+
 	return nil
 }
