@@ -21,8 +21,7 @@ func MakeLogger() zerolog.Logger {
 	}
 	zerolog.ErrorStackMarshaler = printedMarshalStack
 	logger := zerolog.New(output).With().Timestamp().Logger()
-	logger = logger.With().Caller().Logger()
-	logger = logger.With().Stack().Logger()
+	logger = logger.With().Stack().Caller().Logger()
 
 	return logger
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"main.go/services"
 )
 
@@ -28,8 +28,7 @@ func (r *Presentation) postSubscription(c *fiber.Ctx) error {
 		return &fiber.Error{Code: fiber.StatusBadRequest, Message: err.Error()}
 	}
 
-	zerolog.Ctx(c.UserContext()).
-		Info().
+	log.Info().
 		Interface("subscription_request", req).
 		Msg("new.subscription.request")
 
@@ -49,9 +48,8 @@ func (r *Presentation) getSubscription(c *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to process subscription get request")
 	}
 
-	zerolog.Ctx(c.UserContext()).
-		Info().
-		Str("subscription_request", string(c.Body())).
+	log.Info().
+		Interface("user_id", req.UserId).
 		Msg("new.get.subscription.request")
 
 	return c.JSON(sub)
@@ -75,9 +73,8 @@ func (r *Presentation) deleteSubscription(c *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to process subscription delete request")
 	}
 
-	zerolog.Ctx(c.UserContext()).
-		Info().
-		Str("subscription_request", string(c.Body())).
+	log.Info().
+		Interface("user_id", req.UserId).
 		Msg("new.delete.subscription.request")
 
 	return c.JSON(fiber.Map{"status": "success"})
@@ -101,9 +98,8 @@ func (r *Presentation) updateSubscription(c *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to update subscription")
 	}
 
-	zerolog.Ctx(c.UserContext()).
-		Info().
-		Str("subscription_request", string(c.Body())).
+	log.Info().
+		Interface("subscription_request", req).
 		Msg("new.update.subscription.request")
 
 	return c.JSON(fiber.Map{"status": "success"})
@@ -115,10 +111,7 @@ func (r *Presentation) listSubscriptions(c *fiber.Ctx) error {
 		return errors.Wrap(err, "failed to process subscription get request")
 	}
 
-	zerolog.Ctx(c.UserContext()).
-		Info().
-		Str("subscription_request", string(c.Body())).
-		Msg("new.get.subscription.request")
+	log.Info().Msg("new.list.subscriptions.request")
 
 	return c.JSON(sub)
 }

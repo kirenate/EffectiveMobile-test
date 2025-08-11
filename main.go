@@ -52,6 +52,4 @@ func main() {
 		panic(errors.Wrap(err, "failed to start server"))
 	}
 
-	log.Info().Msgf("server.started.at %s", settings.MyConfig.Addr)
-
 }
