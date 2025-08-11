@@ -14,12 +14,14 @@ func NewPresentation(service *services.Service) *Presentation {
 	return &Presentation{service: service}
 }
 
-func (r *Presentation) BuildApp() {
+func (r *Presentation) BuildApp() *fiber.App {
 	app := fiber.New(fiber.Config{})
 	app.Use(recover2.New(recover2.Config{EnableStackTrace: true}))
 
-	app.Post("subscription", r.postSubscription)
-	app.Get("subscription", r.getSubscription)
-	app.Delete("subscription", r.deleteSubscription)
-	app.Put("subscription", r.updateSubscription)
+	app.Post("/subscription", r.postSubscription)
+	app.Get("/subscription", r.getSubscription)
+	app.Delete("/subscription", r.deleteSubscription)
+	app.Put("/subscription", r.updateSubscription)
+
+	return app
 }

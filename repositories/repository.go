@@ -27,18 +27,29 @@ type Subscription struct {
 }
 
 func (r *Repository) CreateSubscription(ctx context.Context, sub *Subscription) error {
-	err := r.db.WithContext(ctx).Save(&sub).Error
+	err := r.db.Table("subscriptions").WithContext(ctx).Save(&sub).Error
 	if err != nil {
-		return errors.Wrap(err, "failed to create subscription")
+		return errors.Wrap(err, "failed to save subscription")
 	}
 
 	return nil
 }
 
+func (r *Repository) GetAllSubscriptions(ctx context.Context) ([]*Subscription, error) {
+	var subs []*Subscription
+
+	err := r.db.Table("subscriptions").WithContext(ctx).Find(&subs).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get all subscriptions")
+	}
+
+	return subs, nil
+}
+
 func (r *Repository) GetSubscription(ctx context.Context, userId uuid.UUID) (*Subscription, error) {
 	var sub *Subscription
 
-	err := r.db.WithContext(ctx).Where("user_id", userId).Find(&sub).Error
+	err := r.db.Table("subscriptions").WithContext(ctx).Where("user_id", userId).Find(&sub).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscription")
 	}
@@ -47,7 +58,7 @@ func (r *Repository) GetSubscription(ctx context.Context, userId uuid.UUID) (*Su
 }
 
 func (r *Repository) DeleteSubscription(ctx context.Context, userId uuid.UUID) error {
-	err := r.db.WithContext(ctx).Where("user_id", userId).Delete("deleted_at", time.Now().UTC()).Error
+	err := r.db.Table("subscriptions").WithContext(ctx).Where("user_id", userId).Update("deleted_at", time.Now().UTC()).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete subscription by user id")
 	}
@@ -57,7 +68,7 @@ func (r *Repository) DeleteSubscription(ctx context.Context, userId uuid.UUID) e
 
 func (r *Repository) UpdateSubscription(ctx context.Context, sub *Subscription) error {
 	sub.UpdatedAt = time.Now().UTC()
-	err := r.db.WithContext(ctx).Where("user_id", sub.UserId).Updates(sub).Error
+	err := r.db.Table("subscriptions").WithContext(ctx).Where("user_id", sub.UserId).Updates(sub).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to update subscription")
 	}

@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	"main.go/repositories"
+	"main.go/settings"
 	"time"
 )
 
@@ -31,28 +33,39 @@ func (r *Service) ProcessSubscriptionRequest(ctx context.Context, req *Subscript
 		Price:       req.Price,
 		UserId:      uuid.New(),
 		StartDate:   now,
-		EndDate:     now.Add(24 * 30 * time.Hour), // допустим что подписка на 30 дней
+		EndDate:     now.Add(24 * settings.MyConfig.SubscriptionDuration * time.Hour),
 	}
 	err := r.repository.CreateSubscription(ctx, sub)
 	if err != nil {
 		return errors.Wrap(err, "failed to create subscription")
 	}
+
+	zerolog.Ctx(ctx).
+		Info().
+		Msg("new.subscription.created")
+
 	return nil
 }
 
-func (r *Service) ProcessSubscriptionGetRequest(ctx context.Context, req *SubscriptionRequest) (*repositories.Subscription, error) {
-	ans, err := r.repository.GetSubscription(ctx, req.UserId)
+func (r *Service) ProcessSubscriptionGetRequest(ctx context.Context) ([]*repositories.Subscription, error) {
+	ans, err := r.repository.GetAllSubscriptions(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscription by user id")
 	}
+
 	return ans, nil
 }
 
-func (r *Service) ProcessSubscriptionDeleteRequest(ctx context.Context, req *SubscriptionRequest) error {
-	err := r.repository.DeleteSubscription(ctx, req.UserId)
+func (r *Service) ProcessSubscriptionDeleteRequest(ctx context.Context, userId *uuid.UUID) error {
+	err := r.repository.DeleteSubscription(ctx, *userId)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete subscription")
 	}
+
+	zerolog.Ctx(ctx).
+		Info().
+		Msg("subscription.deleted")
+
 	return nil
 }
 
@@ -63,11 +76,17 @@ func (r *Service) ProcessSubscriptionUpdateRequest(ctx context.Context, req *Sub
 		Price:       req.Price,
 		UserId:      req.UserId,
 		StartDate:   now,
-		EndDate:     now.Add(24 * 30 * time.Hour),
+		EndDate:     now.Add(24 * settings.MyConfig.SubscriptionDuration * time.Hour),
 	}
+
 	err := r.repository.UpdateSubscription(ctx, sub)
 	if err != nil {
 		return errors.Wrap(err, "failed to update subscription")
 	}
+
+	zerolog.Ctx(ctx).
+		Info().
+		Msg("subscription.updated")
+
 	return nil
 }
