@@ -17,9 +17,9 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 type Subscription struct {
-	ServiceName string    `json:"service_name" pg:"type:varchar(256),notnull"`
+	ServiceName string    `json:"service_name" pg:"type:text,notnull"`
 	Price       int       `json:"price"`
-	UserId      uuid.UUID `json:"user_id" gorm:"primary_key" pg:"type:uuid"`
+	UserId      uuid.UUID `json:"user_id" pg:"type:uuid"`
 	StartDate   time.Time `json:"start_date"`
 	EndDate     time.Time `json:"end_date,omitempty"`
 	DeletedAt   time.Time `json:"deleted_at,omitempty"`
@@ -46,10 +46,21 @@ func (r *Repository) GetAllSubscriptions(ctx context.Context) ([]*Subscription, 
 	return subs, nil
 }
 
-func (r *Repository) GetSubscription(ctx context.Context, userId uuid.UUID) (*Subscription, error) {
-	var sub *Subscription
+func (r *Repository) GetSubscription(ctx context.Context, userId uuid.UUID) ([]*Subscription, error) {
+	var sub []*Subscription
 
 	err := r.db.Table("subscriptions").WithContext(ctx).Where("user_id", userId).Find(&sub).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get subscription")
+	}
+
+	return sub, nil
+}
+
+func (r *Repository) GetSubscriptionByServiceName(ctx context.Context, serviceName string) ([]*Subscription, error) {
+	var sub []*Subscription
+
+	err := r.db.Table("subscriptions").WithContext(ctx).Where("service_name", serviceName).Find(&sub).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscription")
 	}

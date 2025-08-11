@@ -11,7 +11,7 @@ import (
 )
 
 type SubscriptionRequest struct {
-	UserId      uuid.UUID `json:"user_id,omitempty"`
+	UserId      uuid.UUID `json:"user_id"`
 	ServiceName string    `json:"service_name"`
 	Price       int       `json:"price"`
 }
@@ -48,7 +48,7 @@ func (r *Service) ProcessSubscriptionRequest(ctx context.Context, req *Subscript
 	return nil
 }
 
-func (r *Service) ProcessSubscriptionGetRequest(ctx context.Context, userId uuid.UUID) (*repositories.Subscription, error) {
+func (r *Service) ProcessSubscriptionGetRequest(ctx context.Context, userId uuid.UUID) ([]*repositories.Subscription, error) {
 	ans, err := r.repository.GetSubscription(ctx, userId)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscription by user id")
@@ -99,4 +99,28 @@ func (r *Service) ProcessSubscriptionListRequest(ctx context.Context) ([]*reposi
 	}
 
 	return ans, nil
+}
+
+func (r *Service) ProcessSubscriptionCostUserId(ctx context.Context, userId uuid.UUID) (*int, error) {
+	ans, err := r.repository.GetSubscription(ctx, userId)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get subscriptions by user id")
+	}
+	sum := 0
+	for _, v := range ans {
+		sum += v.Price
+	}
+	return &sum, nil
+}
+
+func (r *Service) ProcessSubscriptionCostServiceName(ctx context.Context, serviceName string) (*int, error) {
+	ans, err := r.repository.GetSubscriptionByServiceName(ctx, serviceName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get subscriptions by service name")
+	}
+	sum := 0
+	for _, v := range ans {
+		sum += v.Price
+	}
+	return &sum, nil
 }

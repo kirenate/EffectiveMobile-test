@@ -18,7 +18,7 @@ func (r *Presentation) postSubscription(c *fiber.Ctx) error {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
 
-	err = Validate.Struct(req)
+	err = Validate.StructExcept(req, "UserId")
 	if err != nil {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
@@ -43,6 +43,11 @@ func (r *Presentation) getSubscription(c *fiber.Ctx) error {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
 
+	err = Validate.StructPartial(req, "UserId")
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
 	sub, err := r.service.ProcessSubscriptionGetRequest(c.UserContext(), req.UserId)
 	if err != nil {
 		return errors.Wrap(err, "failed to process subscription get request")
@@ -63,7 +68,7 @@ func (r *Presentation) deleteSubscription(c *fiber.Ctx) error {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
 
-	err = Validate.Struct(req)
+	err = Validate.StructPartial(req, "UserId")
 	if err != nil {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
@@ -114,4 +119,40 @@ func (r *Presentation) listSubscriptions(c *fiber.Ctx) error {
 	log.Info().Msg("new.list.subscriptions.request")
 
 	return c.JSON(sub)
+}
+
+func (r *Presentation) subscriptionCostUserId(c *fiber.Ctx) error {
+	var req *services.SubscriptionRequest
+
+	err := c.BodyParser(&req)
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
+	err = Validate.StructPartial(req, "UserId")
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
+	cost, err := r.service.ProcessSubscriptionCostUserId(c.UserContext(), req.UserId)
+
+	return c.JSON(fiber.Map{"cost": cost})
+}
+
+func (r *Presentation) subscriptionCostServiceName(c *fiber.Ctx) error {
+	var req *services.SubscriptionRequest
+
+	err := c.BodyParser(&req)
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
+	err = Validate.StructPartial(req, "ServiceName")
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
+	cost, err := r.service.ProcessSubscriptionCostServiceName(c.UserContext(), req.ServiceName)
+
+	return c.JSON(fiber.Map{"cost": cost})
 }

@@ -22,8 +22,10 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app.Get("/subscription", r.getSubscription)
 	app.Delete("/subscription", r.deleteSubscription)
 	app.Put("/subscription", r.updateSubscription)
-	
+
 	app.Get("/subscriptions", r.listSubscriptions)
+
+	app.Get("/subscription/cost/user_id", r.subscriptionCostUserId)
 
 	return app
 }
