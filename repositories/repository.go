@@ -17,9 +17,9 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 type Subscription struct {
-	ServiceName string    `json:"service_name"`
+	ServiceName string    `json:"service_name" pg:"type:varchar(256),notnull"`
 	Price       int       `json:"price"`
-	UserId      uuid.UUID `json:"user_id" gorm:"primary_key"`
+	UserId      uuid.UUID `json:"user_id" gorm:"primary_key" pg:"type:uuid"`
 	StartDate   time.Time `json:"start_date"`
 	EndDate     time.Time `json:"end_date,omitempty"`
 	DeletedAt   time.Time `json:"deleted_at,omitempty"`

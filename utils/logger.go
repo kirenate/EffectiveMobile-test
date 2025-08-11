@@ -17,13 +17,13 @@ func MakeLogger() zerolog.Logger {
 	}
 
 	zerolog.TimestampFunc = func() time.Time {
-		return time.Now().Local()
+		return time.Now().UTC()
 	}
 	zerolog.ErrorStackMarshaler = printedMarshalStack
 	logger := zerolog.New(output).With().Timestamp().Logger()
 	logger = logger.With().Caller().Logger()
 	logger = logger.With().Stack().Logger()
-	
+
 	return logger
 }
 

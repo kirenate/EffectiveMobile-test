@@ -37,7 +37,14 @@ func (r *Presentation) postSubscription(c *fiber.Ctx) error {
 }
 
 func (r *Presentation) getSubscription(c *fiber.Ctx) error {
-	sub, err := r.service.ProcessSubscriptionGetRequest(c.UserContext())
+	var req *services.SubscriptionRequest
+
+	err := c.BodyParser(&req)
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
+	sub, err := r.service.ProcessSubscriptionGetRequest(c.UserContext(), req.UserId)
 	if err != nil {
 		return errors.Wrap(err, "failed to process subscription get request")
 	}
@@ -100,4 +107,18 @@ func (r *Presentation) updateSubscription(c *fiber.Ctx) error {
 		Msg("new.update.subscription.request")
 
 	return c.JSON(fiber.Map{"status": "success"})
+}
+
+func (r *Presentation) listSubscriptions(c *fiber.Ctx) error {
+	sub, err := r.service.ProcessSubscriptionListRequest(c.UserContext())
+	if err != nil {
+		return errors.Wrap(err, "failed to process subscription get request")
+	}
+
+	zerolog.Ctx(c.UserContext()).
+		Info().
+		Str("subscription_request", string(c.Body())).
+		Msg("new.get.subscription.request")
+
+	return c.JSON(sub)
 }

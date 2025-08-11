@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -13,8 +14,10 @@ import (
 	"main.go/utils"
 )
 
+var log = utils.MakeLogger()
+
 func main() {
-	log := utils.MakeLogger()
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	log.Info().Msg("logger.started")
 
@@ -35,7 +38,7 @@ func main() {
 		panic(errors.Wrap(err, "failed to merge database"))
 	}
 
-	log.Info().Msgf("db.%s.started.at.%s:%d", settings.MyConfig.DBName, settings.MyConfig.Host, settings.MyConfig.Port)
+	log.Info().Msgf("db.%s.started.at %s:%d", settings.MyConfig.DBName, settings.MyConfig.Host, settings.MyConfig.Port)
 
 	repository := repositories.NewRepository(db)
 
@@ -49,6 +52,6 @@ func main() {
 		panic(errors.Wrap(err, "failed to start server"))
 	}
 
-	log.Info().Msgf("server.started.at.%s", settings.MyConfig.Addr)
+	log.Info().Msgf("server.started.at %s", settings.MyConfig.Addr)
 
 }
