@@ -1,16 +1,24 @@
 package presentations
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"main.go/services"
 )
 
+var Validate = validator.New(validator.WithRequiredStructEnabled())
+
 func (r *Presentation) postSubscription(c *fiber.Ctx) error {
 	var req *services.SubscriptionRequest
 
 	err := c.BodyParser(&req)
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
+	err = Validate.Struct(req)
 	if err != nil {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
@@ -50,6 +58,11 @@ func (r *Presentation) deleteSubscription(c *fiber.Ctx) error {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
 
+	err = Validate.Struct(req)
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
 	err = r.service.ProcessSubscriptionDeleteRequest(c.UserContext(), &req.UserId)
 	if err != nil {
 		return errors.Wrap(err, "failed to process subscription delete request")
@@ -67,6 +80,11 @@ func (r *Presentation) updateSubscription(c *fiber.Ctx) error {
 	var req *services.SubscriptionRequest
 
 	err := c.BodyParser(&req)
+	if err != nil {
+		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
+	}
+
+	err = Validate.Struct(req)
 	if err != nil {
 		return &fiber.Error{Code: fiber.StatusUnprocessableEntity, Message: err.Error()}
 	}
