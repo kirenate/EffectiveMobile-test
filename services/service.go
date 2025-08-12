@@ -32,24 +32,42 @@ func (r *Service) ProcessSubscriptionRequest(ctx context.Context, req *Subscript
 	sub := &repositories.Subscription{
 		ServiceName: req.ServiceName,
 		Price:       req.Price,
-		UserId:      uuid.New(),
+		ServiceId:   uuid.New(),
 		StartDate:   now,
 		EndDate:     now.Add(24 * settings.MyConfig.SubscriptionDuration * time.Hour),
 	}
-	err := r.repository.CreateSubscription(ctx, sub)
+
+	err := r.repository.SaveSubscription(ctx, sub)
 	if err != nil {
-		return errors.Wrap(err, "failed to create subscription")
+		return errors.Wrap(err, "failed to save subscription")
 	}
 
 	log.Ctx(ctx).
 		Info().
 		Msg("new.subscription.created")
+	var subSlice []repositories.Subscription
+	subSlice = append(subSlice, *sub)
+	user := &repositories.User{
+		UserId:       uuid.New(),
+		Subscription: &subSlice,
+	}
+
+	err = r.repository.SaveUser(ctx, user)
+	if err != nil {
+
+		err = r.repository.UpdateUser(ctx, user)
+		if err != nil {
+			return errors.Wrap(err, "failed to update user")
+		}
+
+		return errors.Wrap(err, "failed to save user")
+	}
 
 	return nil
 }
 
-func (r *Service) ProcessSubscriptionGetRequest(ctx context.Context, userId uuid.UUID) ([]*repositories.Subscription, error) {
-	ans, err := r.repository.GetSubscription(ctx, userId)
+func (r *Service) ProcessSubscriptionGetRequest(ctx context.Context, serviceId uuid.UUID) ([]*repositories.Subscription, error) {
+	ans, err := r.repository.GetSubscription(ctx, serviceId)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscription by user id")
 	}
@@ -57,9 +75,9 @@ func (r *Service) ProcessSubscriptionGetRequest(ctx context.Context, userId uuid
 	return ans, nil
 }
 
-func (r *Service) ProcessSubscriptionDeleteRequest(ctx context.Context, userId *uuid.UUID) error {
+func (r *Service) ProcessSubscriptionDeleteRequest(ctx context.Context, serviceId *uuid.UUID) error {
 
-	err := r.repository.DeleteSubscription(ctx, *userId)
+	err := r.repository.DeleteSubscription(ctx, *serviceId)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete subscription")
 	}
@@ -76,7 +94,6 @@ func (r *Service) ProcessSubscriptionUpdateRequest(ctx context.Context, req *Sub
 	sub := &repositories.Subscription{
 		ServiceName: req.ServiceName,
 		Price:       req.Price,
-		UserId:      req.UserId,
 		UpdatedAt:   time.Now().UTC(),
 	}
 
@@ -102,12 +119,12 @@ func (r *Service) ProcessSubscriptionListRequest(ctx context.Context) ([]*reposi
 }
 
 func (r *Service) ProcessSubscriptionCostUserId(ctx context.Context, userId uuid.UUID) (*int, error) {
-	ans, err := r.repository.GetSubscription(ctx, userId)
+	ans, err := r.repository.GetUser(ctx, userId)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscriptions by user id")
 	}
 	sum := 0
-	for _, v := range ans {
+	for _, v := range *ans.Subscription {
 		sum += v.Price
 	}
 	return &sum, nil

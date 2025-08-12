@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"time"
 )
 
@@ -19,17 +20,20 @@ func NewRepository(db *gorm.DB) *Repository {
 type Subscription struct {
 	ServiceName string    `json:"service_name" pg:"type:text,notnull"`
 	Price       int       `json:"price"`
-	UserId      uuid.UUID `json:"user_id" pg:"type:uuid"`
+	ServiceId   uuid.UUID `json:"service_id" gorm:"primary_key" pg:"type:uuid"`
 	StartDate   time.Time `json:"start_date"`
 	EndDate     time.Time `json:"end_date,omitempty"`
 	DeletedAt   time.Time `json:"deleted_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
-func (r *Repository) CreateSubscription(ctx context.Context, sub *Subscription) error {
-	err := r.db.Table("subscriptions").WithContext(ctx).Save(&sub).Error
-	if err != nil {
-		return errors.Wrap(err, "failed to save subscription")
+func (r *Repository) SaveSubscription(ctx context.Context, sub *Subscription) error {
+	res := r.db.Table("subscriptions").WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Save(&sub)
+	if res.Error != nil {
+		return errors.Wrap(res.Error, "failed to save subscription")
+	}
+	if res.RowsAffected == 0 {
+		return errors.New("subscription with that name already exists")
 	}
 
 	return nil
@@ -79,7 +83,7 @@ func (r *Repository) DeleteSubscription(ctx context.Context, userId uuid.UUID) e
 
 func (r *Repository) UpdateSubscription(ctx context.Context, sub *Subscription) error {
 	sub.UpdatedAt = time.Now().UTC()
-	err := r.db.Table("subscriptions").WithContext(ctx).Where("user_id", sub.UserId).Updates(sub).Error
+	err := r.db.Table("subscriptions").WithContext(ctx).Where("service_id", sub.ServiceId).Updates(sub).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to update subscription")
 	}
