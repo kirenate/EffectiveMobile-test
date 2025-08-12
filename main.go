@@ -7,6 +7,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 	"main.go/presentations"
 	"main.go/repositories"
 	"main.go/services"
@@ -28,12 +29,13 @@ func main() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		settings.MyConfig.Host, settings.MyConfig.Port, settings.MyConfig.User, settings.MyConfig.Password, settings.MyConfig.DBName)
 
-	db, err := gorm.Open(postgres.Open(psqlInfo), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+	db, err := gorm.Open(postgres.Open(psqlInfo), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), NamingStrategy: schema.NamingStrategy{SingularTable: true}})
 	if err != nil {
 		panic(errors.Wrap(err, "failed to connect database"))
 	}
 
-	err = db.AutoMigrate(&repositories.Subscription{}, &repositories.User{})
+	err = db.AutoMigrate(&repositories.Subscription{}, &repositories.User{}, &repositories.UserSubscription{})
 	if err != nil {
 		panic(errors.Wrap(err, "failed to merge database"))
 	}

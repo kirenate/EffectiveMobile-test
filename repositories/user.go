@@ -7,13 +7,8 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type User struct {
-	UserId       uuid.UUID       `json:"user_id" gorm:"primary_key"`
-	Subscription *[]Subscription `json:"subscription" gorm:"many2many:user_subscriptions;"`
-}
-
 func (r *Repository) SaveUser(ctx context.Context, user *User) error {
-	res := r.db.Table("users").WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Save(&user)
+	res := r.db.Table("user").WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Save(&user)
 	if res.Error != nil {
 		return errors.Wrap(res.Error, "failed to save user")
 	}
@@ -25,7 +20,7 @@ func (r *Repository) SaveUser(ctx context.Context, user *User) error {
 }
 
 func (r *Repository) UpdateUser(ctx context.Context, user *User) error {
-	err := r.db.Table("users").WithContext(ctx).Where("user_id", user.UserId).Save(&user).Error
+	err := r.db.Table("user").WithContext(ctx).Where("user_id", user.UserId).Save(&user).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to update user")
 	}
@@ -35,10 +30,10 @@ func (r *Repository) UpdateUser(ctx context.Context, user *User) error {
 
 func (r *Repository) GetUser(ctx context.Context, userId uuid.UUID) (*User, error) {
 	var user *User
-	err := r.db.Table("users").WithContext(ctx).Where("user_id", userId).Find(&user).Error
+	err := r.db.Table("user").WithContext(ctx).Where("user_id", userId).Find(&user).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to find user by user id")
 	}
-	
+
 	return user, nil
 }

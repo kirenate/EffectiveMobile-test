@@ -48,8 +48,7 @@ func (r *Service) ProcessSubscriptionRequest(ctx context.Context, req *Subscript
 	var subSlice []repositories.Subscription
 	subSlice = append(subSlice, *sub)
 	user := &repositories.User{
-		UserId:       uuid.New(),
-		Subscription: &subSlice,
+		UserId: uuid.New(),
 	}
 
 	err = r.repository.SaveUser(ctx, user)
@@ -119,12 +118,12 @@ func (r *Service) ProcessSubscriptionListRequest(ctx context.Context) ([]*reposi
 }
 
 func (r *Service) ProcessSubscriptionCostUserId(ctx context.Context, userId uuid.UUID) (*int, error) {
-	ans, err := r.repository.GetUser(ctx, userId)
+	ans, err := r.repository.GetSubscription(ctx, userId)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscriptions by user id")
 	}
 	sum := 0
-	for _, v := range *ans.Subscription {
+	for _, v := range ans {
 		sum += v.Price
 	}
 	return &sum, nil

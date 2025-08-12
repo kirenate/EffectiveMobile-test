@@ -17,6 +17,15 @@ func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
 }
 
+type User struct {
+	UserId uuid.UUID `json:"user_id" gorm:"primary_key"`
+}
+
+type UserSubscription struct {
+	UserId         uuid.UUID `json:"user_id" gorm:"primary_key"`
+	SubscriptionId uuid.UUID `json:"subscription_id" gorm:"primary_key"`
+}
+
 type Subscription struct {
 	ServiceName string    `json:"service_name" pg:"type:text,notnull"`
 	Price       int       `json:"price"`
@@ -28,7 +37,7 @@ type Subscription struct {
 }
 
 func (r *Repository) SaveSubscription(ctx context.Context, sub *Subscription) error {
-	res := r.db.Table("subscriptions").WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Save(&sub)
+	res := r.db.Table("subscription").WithContext(ctx).Clauses(clause.OnConflict{DoNothing: true}).Save(&sub)
 	if res.Error != nil {
 		return errors.Wrap(res.Error, "failed to save subscription")
 	}
@@ -42,7 +51,7 @@ func (r *Repository) SaveSubscription(ctx context.Context, sub *Subscription) er
 func (r *Repository) GetAllSubscriptions(ctx context.Context) ([]*Subscription, error) {
 	var subs []*Subscription
 
-	err := r.db.Table("subscriptions").WithContext(ctx).Find(&subs).Error
+	err := r.db.Table("subscription").WithContext(ctx).Find(&subs).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get all subscriptions")
 	}
@@ -53,7 +62,12 @@ func (r *Repository) GetAllSubscriptions(ctx context.Context) ([]*Subscription, 
 func (r *Repository) GetSubscription(ctx context.Context, userId uuid.UUID) ([]*Subscription, error) {
 	var sub []*Subscription
 
-	err := r.db.Table("subscriptions").WithContext(ctx).Where("user_id", userId).Find(&sub).Error
+	err := r.db.WithContext(ctx).Raw(`
+	select * from user_subscription us 
+    	join subscription s on s.service_id = us.subscription_id 
+        	 where us.user_id = ?
+        		 `, userId).Scan(&sub).Error
+
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscription")
 	}
@@ -64,7 +78,7 @@ func (r *Repository) GetSubscription(ctx context.Context, userId uuid.UUID) ([]*
 func (r *Repository) GetSubscriptionByServiceName(ctx context.Context, serviceName string) ([]*Subscription, error) {
 	var sub []*Subscription
 
-	err := r.db.Table("subscriptions").WithContext(ctx).Where("service_name", serviceName).Find(&sub).Error
+	err := r.db.Table("subscription").WithContext(ctx).Where("service_name", serviceName).Find(&sub).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get subscription")
 	}
@@ -73,7 +87,7 @@ func (r *Repository) GetSubscriptionByServiceName(ctx context.Context, serviceNa
 }
 
 func (r *Repository) DeleteSubscription(ctx context.Context, userId uuid.UUID) error {
-	err := r.db.Table("subscriptions").WithContext(ctx).Where("user_id", userId).Update("deleted_at", time.Now().UTC()).Error
+	err := r.db.Table("subscription").WithContext(ctx).Where("user_id", userId).Update("deleted_at", time.Now().UTC()).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete subscription by user id")
 	}
@@ -83,7 +97,7 @@ func (r *Repository) DeleteSubscription(ctx context.Context, userId uuid.UUID) e
 
 func (r *Repository) UpdateSubscription(ctx context.Context, sub *Subscription) error {
 	sub.UpdatedAt = time.Now().UTC()
-	err := r.db.Table("subscriptions").WithContext(ctx).Where("service_id", sub.ServiceId).Updates(sub).Error
+	err := r.db.Table("subscription").WithContext(ctx).Where("service_id", sub.ServiceId).Updates(sub).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to update subscription")
 	}
