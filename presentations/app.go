@@ -26,6 +26,7 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app.Get("/subscriptions", r.listSubscriptions)
 
 	app.Get("/subscription/cost/user_id", r.subscriptionCostUserId)
+	app.Get("/subscription/cost/service_name", r.subscriptionCostServiceName)
 
 	return app
 }
