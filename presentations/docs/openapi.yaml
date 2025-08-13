@@ -1,0 +1,282 @@
+---
+
+definitions:
+  Subscription:
+    properties:
+      serviceName:
+        type: string
+        example: Netflix
+      price:
+        type: integer
+        example: 900
+      serviceId:
+        type: string
+        format: uuid
+        example: c57df309-95d8-4075-8e37-2bc7ce3c57d3
+      startDate :
+        type: string
+        format: date
+        example: 2025-08-13 07:45:24.8504 +0000 UTC
+      endDate:
+        type: string
+        format: date
+        example: 2025-09-13 07:45:24.8504 +0000 UTC
+      deletedAt:
+        type: string
+        format: date
+        example: 2025-08-14 07:45:24.8504 +0000 UTC
+      updatedAt:
+        type: string
+        format: date
+        example: 2025-08-13 07:45:24.8504 +0000 UTC
+    type: object
+  Request:
+    properties:
+      userId:
+        type: string
+        format: uuid
+        example: c57df309-95d8-4075-8e37-2bc7ce3c57d3
+      serviceName:
+        type: string
+        example: Netflix
+      price:
+        type: integer
+        example: 900
+    type: object
+info:
+  description: This is an API for Effective Mobile test task
+  title: Effective Mobile
+  version: "1"
+paths:
+  /subscription:
+    post:
+      consumes:
+        - application/json
+      description: Save new subscription
+      parameters:
+        - description: Save new subscription
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: "#/definitions/Request"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              status:
+                type: string
+                example: success
+            type: object
+        "422":
+          description: Unprocessable entity
+          schema:
+            properties:
+              message:
+                type: string
+                example: failed to save subscription
+            type: object
+    put:
+      consumes:
+        - application/json
+      description: Update user
+      parameters:
+        - description: Update user
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: "#/definitions/Request"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              status:
+                type: string
+                example: success
+            type: object
+        "422":
+          description: Unprocessable entity
+          schema:
+            properties:
+              message:
+                type: string
+                example: failed to update subscription
+            type: object
+    delete:
+      consumes:
+        - application/json
+      description: Delete subscription
+      parameters:
+        - description: Delete subscription
+          in: body
+          name: request
+          required: true
+          schema:
+            items:
+              $ref: "#/definitions/Request"
+            type: object
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              status:
+                type: string
+                example: success
+            type: object
+        "422":
+          description: Unprocessable entity
+          schema:
+            properties:
+              message:
+                type: string
+                example: failed to delete subscription
+            type: object
+    get:
+      consumes:
+        - application/json
+      description: Get subscription by user
+      parameters:
+        - description: Get subscription by user
+          in: body
+          name: user id
+          required: true
+          schema:
+            properties:
+              userID:
+                type: string
+                format: uuid
+                example: c57df309-95d8-4075-8e37-2bc7ce3c57d3
+            type: object
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: "#/definitions/Subscription"
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              message:
+                type: string
+                example: failed to get subscription
+            type: object
+  /subscriptions:
+    get:
+      consumes:
+        - application/json
+      description: List subscriptions
+      parameters:
+        - description: List subscriptions
+          in: body
+          name: user id
+          required: true
+          schema:
+            properties:
+              userID:
+                type: string
+                format: uuid
+                example: c57df309-95d8-4075-8e37-2bc7ce3c57d3
+            type: object
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: "#/definitions/Subscription"
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              message:
+                type: string
+                example: failed to get subscription
+            type: object
+  /subscription/cost/user_id:
+    get:
+      consumes:
+        - application/json
+      description: Get subscriptions cost by user
+      parameters:
+        - description: Get subscriptions cost by user
+          in: body
+          name: user id
+          required: true
+          schema:
+            properties:
+              userID:
+                type: string
+                format: uuid
+                example: c57df309-95d8-4075-8e37-2bc7ce3c57d3
+            type: object
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              cost:
+                type: integer
+                example: 1000
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              message:
+                type: string
+                example: failed to get subscription cost
+            type: object
+  /subscription/cost/service_name:
+    get:
+      consumes:
+        - application/json
+      description: Get subscriptions cost by service name
+      parameters:
+        - description: Get subscriptions cost by service name
+          in: body
+          name: service name
+          required: true
+          schema:
+            properties:
+              serviceName:
+                type: string
+                example: Netflix
+            type: object
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              cost:
+                type: integer
+                example: 1000
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            properties:
+              message:
+                type: string
+                example: failed to get subscription cost
+            type: object
+swagger: "2.0"

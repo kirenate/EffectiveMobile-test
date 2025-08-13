@@ -87,7 +87,11 @@ func (r *Repository) GetSubscriptionByServiceName(ctx context.Context, serviceNa
 }
 
 func (r *Repository) DeleteSubscription(ctx context.Context, userId uuid.UUID) error {
-	err := r.db.Table("subscription").WithContext(ctx).Where("user_id", userId).Update("deleted_at", time.Now().UTC()).Error
+	err := r.db.Table("subscription").WithContext(ctx).Update("deleted_at", time.Now().UTC()).Where(`
+	select * from user_subscription us 
+    	join subscription s on s.service_id = us.subscription_id 
+        	 where us.user_id = ?
+        		 `, userId).Error
 	if err != nil {
 		return errors.Wrap(err, "failed to delete subscription by user id")
 	}

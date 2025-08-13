@@ -18,6 +18,9 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app := fiber.New(fiber.Config{})
 	app.Use(recover2.New(recover2.Config{EnableStackTrace: true}))
 
+	app.Get("/openapi.yaml", r.openapi)
+	app.Get("/docs", r.swagger)
+
 	app.Post("/subscription", r.postSubscription)
 	app.Get("/subscription", r.getSubscription)
 	app.Delete("/subscription", r.deleteSubscription)
