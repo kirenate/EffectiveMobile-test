@@ -1,0 +1,7 @@
+host: postgres
+port: 5432
+user: effective_mobile_user
+password: effective_mobile_password
+dbname: effective_mobile_db
+subscription_duration: 30
+addr: 0.0.0.0:8080
