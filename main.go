@@ -35,7 +35,7 @@ func main() {
 		panic(errors.Wrap(err, "failed to connect database"))
 	}
 
-	err = db.AutoMigrate(&repositories.Subscription{}, &repositories.User{}, &repositories.UserSubscription{})
+	err = db.AutoMigrate(&repositories.Subscription{})
 	if err != nil {
 		panic(errors.Wrap(err, "failed to merge database"))
 	}

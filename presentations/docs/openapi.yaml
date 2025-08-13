@@ -3,6 +3,10 @@
 definitions:
   Subscription:
     properties:
+      id:
+        type: string
+        format: uuid
+        example: c57df309-95d8-4075-8e37-2bc7ce3c57d3
       serviceName:
         type: string
         example: Netflix
@@ -48,7 +52,7 @@ info:
   title: Effective Mobile
   version: "1"
 paths:
-  /subscription:
+  /subscriptions:
     post:
       consumes:
         - application/json
@@ -119,8 +123,11 @@ paths:
           name: request
           required: true
           schema:
-            items:
-              $ref: "#/definitions/Request"
+            properties:
+              userID:
+                type: string
+                format: uuid
+                example: c57df309-95d8-4075-8e37-2bc7ce3c57d3
             type: object
       produces:
         - application/json
@@ -174,23 +181,11 @@ paths:
                 type: string
                 example: failed to get subscription
             type: object
-  /subscriptions:
+  /subscription-list:
     get:
       consumes:
         - application/json
       description: List subscriptions
-      parameters:
-        - description: List subscriptions
-          in: body
-          name: user id
-          required: true
-          schema:
-            properties:
-              userID:
-                type: string
-                format: uuid
-                example: c57df309-95d8-4075-8e37-2bc7ce3c57d3
-            type: object
       produces:
         - application/json
       responses:
@@ -208,7 +203,7 @@ paths:
                 type: string
                 example: failed to get subscription
             type: object
-  /subscription/cost/user_id:
+  /subscription/cost/user-id:
     get:
       consumes:
         - application/json
@@ -244,7 +239,7 @@ paths:
                 type: string
                 example: failed to get subscription cost
             type: object
-  /subscription/cost/service_name:
+  /subscription/cost/service-name:
     get:
       consumes:
         - application/json

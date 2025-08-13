@@ -21,15 +21,15 @@ func (r *Presentation) BuildApp() *fiber.App {
 	app.Get("/openapi.yaml", r.openapi)
 	app.Get("/docs", r.swagger)
 
-	app.Post("/subscription", r.postSubscription)
-	app.Get("/subscription", r.getSubscription)
-	app.Delete("/subscription", r.deleteSubscription)
-	app.Put("/subscription", r.updateSubscription)
+	app.Post("/subscriptions", r.postSubscription)
+	app.Get("/subscriptions", r.getSubscription)
+	app.Delete("/subscriptions", r.deleteSubscription)
+	app.Put("/subscriptions", r.updateSubscription)
 
-	app.Get("/subscriptions", r.listSubscriptions)
+	app.Get("/subscription-list", r.listSubscriptions)
 
-	app.Get("/subscription/cost/user_id", r.subscriptionCostUserId)
-	app.Get("/subscription/cost/service_name", r.subscriptionCostServiceName)
+	app.Get("/subscription/cost/user-id", r.subscriptionCostUserId)
+	app.Get("/subscription/cost/service-name", r.subscriptionCostServiceName)
 
 	return app
 }
